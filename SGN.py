@@ -19,7 +19,7 @@ class DFSTreeNode:
         self.node_idx = node_idx
         self.node_level = node_level
 
-# 返回一个 nodes_num*1 的向量，表示节点是否处于某个环中
+# Is the node in a circle? return a vector of shape [nodes_num*1]
 def DFS(graph):
     flag_visited_nodes = np.zeros((graph.X.shape[0]))
     flag_avilable_edges = copy.copy(graph.A)
@@ -159,7 +159,7 @@ class SGN(tf.keras.Model):
         self.try_num = 5
         self.using_attention = True
         self.condition_factor = 'LSTM'
-        self.cnn_layer_num = 2
+        self.cnn_layer_num = 1
         self.output_weight_Q = False
 
     def partition(self):
@@ -275,10 +275,6 @@ class SGN(tf.keras.Model):
         head_node = None
         current_node = None
         for i in range(self.structure_size):
-            if accumulated_X is not None and self.Is_NaN(accumulated_X):
-                print(accumulated_X)
-            # 如果是选起始 node, score 是全部节点的得分;
-            # 如果是选下一个 node, score 是邻居节点的得分 经未访问过的边
             if head_node is None:
                 # score
                 score = tf.matmul(graph.X, weight[0])
@@ -356,7 +352,7 @@ class SGN(tf.keras.Model):
                     query_X = tf.concat([query_X, graph.X[next_idx:next_idx+1]], axis=0)
                     # update current position
                     current_node = next_node
-                    # add edges ***** # c_idx_, 后缀_表示 子结构 的意思
+                    # add edges 
                     c_idx = current_node.node_idx
                     c_idx_ = nodes_visited_order[c_idx]
                     visited_nodes = list(nodes_visited_order.keys())
@@ -414,8 +410,6 @@ class SGN(tf.keras.Model):
         return Y
 
 
-    # step1，同一个qurey规则下的结构，求和；step2，不同规则的representation应用MLP
-    # step1，同一个query规则下的结构，attention求和；step2，不同规则的representation应用MLP
     def structures_learning(self, graph):
         if self.using_attention:
             representation = []
@@ -599,6 +593,7 @@ model.k_fold = 5
 model.test_part = 0
 model.using_attention = True
 model.output_weight_Q = False
+model.cnn_layer_num = 1
 
 model.run()
 
